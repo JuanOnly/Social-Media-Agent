@@ -1,0 +1,66 @@
+{
+  "product": {
+    "name": "BioLink",
+    "description": "A link-in-bio tool for creators who want more control. Build your branded page, track your audience, and grow your following.",
+    "brand_voice": "professional",
+    "target_audience": "content creators, small businesses, influencers, entrepreneurs"
+  },
+  "selling_points": [
+    "Unlimited links - no restrictions",
+    "Beautiful themes - professional designs",
+    "Built-in analytics - track views and clicks",
+    "Custom domains - fully branded",
+    "Fast loading - instant on any device",
+    "Easy to use - no coding required"
+  ],
+  "pricing": {
+    "free": ["5 links", "3 themes", "Basic analytics", "biolink.app/username"],
+    "pro": {
+      "price": "$7/month",
+      "features": ["Unlimited links", "All themes + custom CSS", "Advanced analytics", "Custom domains", "Remove branding", "Priority support"]
+    }
+  },
+  "target_keywords": [
+    "link in bio", "linktree alternative", "linktree", "bio link", "link bio", "biolink",
+    "creator tools", "social media links", "link page", "personal brand", "influencer tools"
+  ],
+  "faq": [
+    {
+      "question": "How is BioLink different from Linktree?",
+      "answer": "BioLink offers unlimited links, custom domains, and advanced analytics at a fraction of the price. Plus, no BioLink branding on your page.",
+      "keywords": "linktree alternative, comparison, vs linktree"
+    },
+    {
+      "question": "Can I use my own domain?",
+      "answer": "Yes! Pro users can connect custom domains for a fully branded experience.",
+      "keywords": "custom domain, own domain, branded"
+    },
+    {
+      "question": "Is there a free trial?",
+      "answer": "Yes, our free plan includes 5 links and basic analytics. Upgrade anytime.",
+      "keywords": "free, trial, pricing"
+    },
+    {
+      "question": "How does analytics work?",
+      "answer": "Track views, clicks, and audience location. Pro users get advanced analytics with more insights.",
+      "keywords": "analytics, tracking, stats"
+    }
+  ],
+  "post_ideas": {
+    "educational": [
+      "Did you know you can drive more traffic with a link in bio? Here's how...",
+      "5 ways to maximize your link in bio"
+    ],
+    "promotional": [
+      "Stop limiting your links. Get unlimited with BioLink Pro",
+      "Upgrade your bio link today"
+    ],
+    "engagement": [
+      "What's your most clicked link? Drop it below"
+    ],
+    "announcement": [
+      "New theme alert! Check out our latest designs"
+    ]
+  },
+  "competitors": ["Linktree", "Carrd", "Beacons", "Taplink"]
+}
