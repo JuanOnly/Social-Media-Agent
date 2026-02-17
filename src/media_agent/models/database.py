@@ -3,7 +3,7 @@
 from typing import AsyncGenerator, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select
+from sqlalchemy import select, func, Integer
 
 from ..config import get_settings
 from ..models import Base, Product, Post, FAQ, Lead, PlatformCredential, ActivityLog, Analytics
@@ -321,7 +321,7 @@ async def get_analytics_summary(
 ) -> dict:
     """Get analytics summary for the specified period."""
     from datetime import timedelta
-    from sqlalchemy import func
+    from sqlalchemy import func, Integer
     
     # Get posts stats
     posts_query = select(
