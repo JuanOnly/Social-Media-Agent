@@ -1,50 +1,77 @@
-"""Twitter/X platform adapter using Playwright."""
+"""Twitter/X platform adapter using Playwright with human behavior."""
 
 import asyncio
+import random
 from typing import Optional
 
 from .base import PlatformAdapter
+from .human import HumanBehavior
 
 
 class TwitterAdapter(PlatformAdapter):
-    """Twitter/X platform adapter using Playwright."""
+    """Twitter/X platform adapter using Playwright with human-like behavior."""
 
     LOGIN_URL = "https://x.com/i/flow/login"
     HOME_URL = "https://x.com/home"
 
+    def __init__(self, username: str, password: str):
+        super().__init__(username, password)
+        self.human: Optional[HumanBehavior] = None
+
     async def login(self) -> bool:
-        """Login to Twitter/X using Playwright."""
+        """Login to Twitter/X using Playwright with human behavior."""
         try:
             await self.init_browser(headless=False)
             
+            # Initialize human behavior
+            self.human = HumanBehavior(self.page)
+            
             # Navigate to login
             await self.page.goto(self.LOGIN_URL)
-            await self.page.wait_for_load_state("networkidle")
+            await self.human.timing.wait_for_page_load(self.page)
             
-            # Enter username
+            # Enter username/email with human-like typing
             await self.page.wait_for_selector('input[autocomplete="username"]', timeout=10000)
-            await self.page.fill('input[autocomplete="username"]', self.username)
-            await self.page.click('button:has-text("Next")')
+            username_input = await self.page.query_selector('input[autocomplete="username"]')
             
-            await asyncio.sleep(2)
+            # Use the username directly (could be email or handle)
+            await self.human.type_text(self.username, username_input)
+            await self.human.random_delay(0.5, 1.5)
             
-            # Check if password field or username verification
+            next_btn = await self.page.query_selector('button:has-text("Next")')
+            await self.human.click_element(next_btn)
+            
+            await self.human.think_delay()
+            
+            # Check if password or verification needed
             try:
-                # Try password field
-                await self.page.wait_for_selector('input[autocomplete="current-password"]', timeout=5000)
-                await self.page.fill('input[autocomplete="current-password"]', self.password)
+                password_input = await self.page.wait_for_selector('input[autocomplete="current-password"]', timeout=5000)
+                await self.human.type_text(self.password, password_input)
             except:
-                # Might need username verification first
-                await self.page.fill('input[autocomplete="username"]', self.username)
-                await self.page.click('button:has-text("Next")')
-                await asyncio.sleep(2)
-                await self.page.wait_for_selector('input[autocomplete="current-password"]', timeout=5000)
-                await self.page.fill('input[autocomplete="current-password"]', self.password)
+                # Need username verification - might be using email
+                username_input2 = await self.page.query_selector('input[autocomplete="username"]')
+                if username_input2:
+                    await self.human.type_text(self.username, username_input2)
+                    await self.human.click_element(next_btn)
+                    await self.human.think_delay()
+                    password_input = await self.page.wait_for_selector('input[autocomplete="current-password"]', timeout=5000)
+                    await self.human.type_text(self.password, password_input)
             
-            await self.page.click('button:has-text("Log in")')
+            await self.human.random_delay(0.5, 1.0)
             
-            # Wait for home page
-            await self.page.wait_for_url(self.HOME_URL, timeout=15000)
+            # Click login button
+            login_btn = await self.page.query_selector('button:has-text("Log in")')
+            await self.human.click_element(login_btn)
+            
+            # Wait for home page or check for additional verification
+            try:
+                await self.page.wait_for_url(self.HOME_URL, timeout=15000)
+            except:
+                # Might need to handle email verification or 2FA
+                await self.human.random_delay(5, 10)
+            
+            # Session warmup - browse a bit like human
+            await self.human.warmup_session(duration_seconds=20)
             
             await self.save_cookies()
             self.is_logged_in = True
@@ -55,25 +82,41 @@ class TwitterAdapter(PlatformAdapter):
             return False
 
     async def post(self, content: str) -> bool:
-        """Create a new tweet."""
+        """Create a new tweet with human-like behavior."""
         if not self.is_logged_in:
             await self.login()
         
+        if not self.human:
+            self.human = HumanBehavior(self.page)
+        
         try:
+            # Navigate to home
             await self.page.goto(self.HOME_URL)
-            await self.page.wait_for_load_state("networkidle")
+            await self.human.timing.wait_for_page_load(self.page)
             
-            # Click the post button / tweet box
-            await self.page.wait_for_selector('div[aria-label="Post text"]', timeout=10000)
-            await self.page.click('div[aria-label="Post text"]')
+            # Simulate reading timeline
+            await self.human.random_delay(2, 4)
             
-            # Type content
-            await self.page.fill('div[aria-label="Post text"]', content)
+            # Click post area with human-like movement
+            post_box = await self.page.wait_for_selector('div[aria-label="Post text"]', timeout=10000)
+            await self.human.hover(post_box)
+            await self.human.click_element(post_box)
+            
+            await self.human.think_delay()
+            
+            # Type content with human-like typing
+            await self.human.type_text(content, post_box)
+            
+            # Think before posting
+            await self.human.random_delay(1, 3)
             
             # Click post button
-            await self.page.click('button[data-testid="tweetButton"]')
+            post_btn = await self.page.query_selector('button[data-testid="tweetButton"]')
+            await self.human.move_to_element(post_btn)
+            await self.human.click_element(post_btn)
             
-            await asyncio.sleep(3)
+            # Wait and verify
+            await self.human.random_delay(2, 4)
             return True
             
         except Exception as e:
@@ -81,17 +124,27 @@ class TwitterAdapter(PlatformAdapter):
             return False
 
     async def like(self, post_id: str) -> bool:
-        """Like a tweet."""
+        """Like a tweet with human-like behavior."""
         if not self.is_logged_in:
             await self.login()
         
+        if not self.human:
+            self.human = HumanBehavior(self.page)
+        
         try:
-            # Navigate to tweet
             await self.page.goto(f"https://x.com/i/status/{post_id}")
-            await self.page.wait_for_load_state("networkidle")
+            await self.human.timing.wait_for_page_load(self.page)
             
-            # Click like button
-            await self.page.click('button[data-testid="like"]')
+            # Read the tweet first
+            await self.human.random_delay(2, 4)
+            
+            # Click like button with movement
+            like_btn = await self.page.query_selector('button[data-testid="like"]')
+            if like_btn:
+                await self.human.hover(like_btn)
+                await self.human.click_element(like_btn)
+            
+            await self.human.action_delay("like")
             return True
             
         except Exception as e:
@@ -99,24 +152,38 @@ class TwitterAdapter(PlatformAdapter):
             return False
 
     async def comment(self, post_id: str, content: str) -> bool:
-        """Comment on a tweet."""
+        """Comment on a tweet with human-like behavior."""
         if not self.is_logged_in:
             await self.login()
         
+        if not self.human:
+            self.human = HumanBehavior(self.page)
+        
         try:
             await self.page.goto(f"https://x.com/i/status/{post_id}")
-            await self.page.wait_for_load_state("networkidle")
+            await self.human.timing.wait_for_page_load(self.page)
+            
+            # Read the tweet
+            await self.human.random_delay(3, 5)
             
             # Click reply button
-            await self.page.click('button[data-testid="reply"]')
+            reply_btn = await self.page.query_selector('button[data-testid="reply"]')
+            await self.human.hover(reply_btn)
+            await self.human.click_element(reply_btn)
+            
+            await self.human.think_delay()
             
             # Type comment
-            await self.page.fill('div[aria-label="Post text"]', content)
+            post_box = await self.page.query_selector('div[aria-label="Post text"]')
+            await self.human.type_text(content, post_box)
             
-            # Click reply
-            await self.page.click('button[data-testid="tweetButton"]')
+            await self.human.random_delay(1, 2)
             
-            await asyncio.sleep(3)
+            # Submit reply
+            reply_submit = await self.page.query_selector('button[data-testid="tweetButton"]')
+            await self.human.click_element(reply_submit)
+            
+            await self.human.action_delay("comment")
             return True
             
         except Exception as e:
@@ -124,18 +191,27 @@ class TwitterAdapter(PlatformAdapter):
             return False
 
     async def follow(self, username: str) -> bool:
-        """Follow a user."""
+        """Follow a user with human-like behavior."""
         if not self.is_logged_in:
             await self.login()
         
+        if not self.human:
+            self.human = HumanBehavior(self.page)
+        
         try:
             await self.page.goto(f"https://x.com/{username}")
-            await self.page.wait_for_load_state("networkidle")
+            await self.human.timing.wait_for_page_load(self.page)
             
-            # Click follow button
-            await self.page.click('button:has-text("Follow")')
+            # View profile briefly
+            await self.human.random_delay(2, 4)
             
-            await asyncio.sleep(2)
+            # Find and click follow button
+            follow_btn = await self.page.query_selector('button:has-text("Follow")')
+            if follow_btn:
+                await self.human.hover(follow_btn)
+                await self.human.click_element(follow_btn)
+            
+            await self.human.action_delay("follow")
             return True
             
         except Exception as e:
@@ -143,25 +219,32 @@ class TwitterAdapter(PlatformAdapter):
             return False
 
     async def search(self, query: str, limit: int = 10) -> list[dict]:
-        """Search tweets."""
+        """Search tweets with human-like behavior."""
         if not self.is_logged_in:
             await self.login()
         
+        if not self.human:
+            self.human = HumanBehavior(self.page)
+        
         try:
+            # Navigate to search
             await self.page.goto(f"https://x.com/search?q={query}&src=typed_query")
-            await self.page.wait_for_load_state("networkidle")
+            await self.human.timing.wait_for_page_load(self.page)
+            
+            # Let results load and scan
+            await self.human.random_delay(2, 4)
             
             results = []
             tweets = await self.page.query_selector_all('article[data-testid="tweet"]')
             
             for tweet in tweets[:limit]:
                 try:
-                    username = await tweet.query_selector('div[data-testid="User-Name"]')
-                    text = await tweet.query_selector('div[data-testid="tweetText"]')
+                    username_elem = await tweet.query_selector('div[data-testid="User-Name"]')
+                    text_elem = await tweet.query_selector('div[data-testid="tweetText"]')
                     
                     results.append({
-                        "username": await username.inner_text() if username else "",
-                        "text": await text.inner_text() if text else "",
+                        "username": await username_elem.inner_text() if username_elem else "",
+                        "text": await text_elem.inner_text() if text_elem else "",
                     })
                 except:
                     continue
@@ -173,13 +256,19 @@ class TwitterAdapter(PlatformAdapter):
             return []
 
     async def get_mentions(self, since_id: Optional[str] = None) -> list[dict]:
-        """Get mentions."""
+        """Get mentions with human-like behavior."""
         if not self.is_logged_in:
             await self.login()
         
+        if not self.human:
+            self.human = HumanBehavior(self.page)
+        
         try:
             await self.page.goto("https://x.com/notifications/mentions")
-            await self.page.wait_for_load_state("networkidle")
+            await self.human.timing.wait_for_page_load(self.page)
+            
+            # Read notifications like human
+            await self.human.random_delay(2, 4)
             
             mentions = []
             notifications = await self.page.query_selector_all('div[data-testid="notification"]')

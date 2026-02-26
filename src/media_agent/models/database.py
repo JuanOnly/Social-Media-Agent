@@ -603,3 +603,66 @@ async def update_engagement_item(
         await session.commit()
         await session.refresh(item)
     return item
+
+
+async def save_platform_credential(
+    session: AsyncSession,
+    platform: str,
+    username: str,
+    cookies_json: str = None,
+) -> PlatformCredential:
+    """Save or update platform credentials."""
+    from sqlalchemy import select
+    from datetime import datetime
+    
+    result = await session.execute(
+        select(PlatformCredential).where(PlatformCredential.platform == platform)
+    )
+    credential = result.scalar_one_or_none()
+    
+    if credential:
+        credential.username = username
+        credential.cookies_json = cookies_json
+        credential.last_validated = datetime.utcnow()
+        credential.is_active = True
+    else:
+        credential = PlatformCredential(
+            platform=platform,
+            username=username,
+            cookies_json=cookies_json,
+            is_active=True,
+            last_validated=datetime.utcnow(),
+        )
+        session.add(credential)
+    
+    await session.commit()
+    await session.refresh(credential)
+    return credential
+
+
+async def get_platform_credentials(
+    session: AsyncSession,
+    platform: str = None,
+) -> list[PlatformCredential]:
+    """Get platform credentials."""
+    from sqlalchemy import select
+    
+    if platform:
+        result = await session.execute(
+            select(PlatformCredential).where(
+                PlatformCredential.platform == platform,
+                PlatformCredential.is_active == True
+            )
+        )
+        return result.scalars().all()
+    else:
+        result = await session.execute(
+            select(PlatformCredential).where(PlatformCredential.is_active == True)
+        )
+        return result.scalars().all()
+
+
+async def get_connected_platforms(session: AsyncSession) -> list[str]:
+    """Get list of connected platform names."""
+    credentials = await get_platform_credentials(session)
+    return [c.platform for c in credentials]

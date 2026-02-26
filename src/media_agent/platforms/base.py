@@ -24,7 +24,7 @@ class PlatformAdapter(ABC):
 
     def _get_cookies_path(self) -> Path:
         """Get path for storing cookies."""
-        from ...config import get_project_root
+        from media_agent.config import get_project_root
         cookies_dir = get_project_root() / "config" / "cookies"
         cookies_dir.mkdir(exist_ok=True)
         return cookies_dir / f"{self.__class__.__name__}_cookies.json"
@@ -57,6 +57,13 @@ class PlatformAdapter(ABC):
             cookies = await self.context.cookies()
             with open(self.cookies_path, 'w') as f:
                 json.dump(cookies, f)
+    
+    def get_cookies_json(self) -> str:
+        """Get cookies as JSON string."""
+        if self.cookies_path and self.cookies_path.exists():
+            with open(self.cookies_path, 'r') as f:
+                return f.read()
+        return None
 
     async def close_browser(self):
         """Close browser and save cookies."""
