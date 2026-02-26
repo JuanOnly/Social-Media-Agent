@@ -1,11 +1,9 @@
 """Base platform adapter with Playwright."""
 
-import asyncio
 import json
-from abc import ABC, abstractmethod
+from abc import ABC
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
 
 from playwright.async_api import async_playwright, Browser, Page, BrowserContext
 
@@ -24,9 +22,14 @@ class PlatformAdapter(ABC):
 
     def _get_cookies_path(self) -> Path:
         """Get path for storing cookies."""
-        from media_agent.config import get_project_root
-        cookies_dir = get_project_root() / "config" / "cookies"
-        cookies_dir.mkdir(exist_ok=True)
+        try:
+            from media_agent.config import get_project_root
+            project_root = get_project_root()
+        except ImportError:
+            # Fallback for tests - go up to project root
+            project_root = Path(__file__).parent.parent.parent.parent
+        cookies_dir = project_root / "config" / "cookies"
+        cookies_dir.mkdir(parents=True, exist_ok=True)
         return cookies_dir / f"{self.__class__.__name__}_cookies.json"
 
     async def init_browser(self, headless: bool = False):

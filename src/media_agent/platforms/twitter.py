@@ -1,7 +1,5 @@
 """Twitter/X platform adapter using Playwright with human behavior."""
 
-import asyncio
-import random
 from typing import Optional
 
 from .base import PlatformAdapter

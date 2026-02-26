@@ -78,7 +78,7 @@ class AIEngine:
             "authoritative": "confident, knowledgeable, expert tone",
         }
 
-        system_prompt = f"""You are a social media content generator. 
+        system_prompt = """You are a social media content generator. 
 Create engaging posts tailored to the specified brand voice and audience.
 Always include relevant hashtags. Don't make up specific numbers or claims."""
 

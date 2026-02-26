@@ -1,7 +1,6 @@
 """Product configuration loader."""
 
 import json
-from pathlib import Path
 from typing import Optional
 
 from ..config import get_config_dir

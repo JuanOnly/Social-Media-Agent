@@ -1,7 +1,6 @@
 """Database models for MediaAgent."""
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import (
     Column, Integer, String, Text, Boolean, Float, DateTime, ForeignKey

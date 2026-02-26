@@ -1,13 +1,12 @@
 """Auto-response service for monitoring and replying to engagement."""
 
-import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.database import get_db, get_products, get_faqs, update_post, log_activity
+from ..models.database import get_db, get_products, get_faqs, log_activity
 from ..platforms import get_platform_registry
 from ..agents.ai_engine import get_ai_engine
 

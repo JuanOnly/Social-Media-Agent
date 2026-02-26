@@ -7,12 +7,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from nicegui import app, ui
 
-from media_agent.config import get_settings, load_product_config, get_faqs_from_config
+from media_agent.config import get_settings, load_product_config
 from media_agent.config.rate_limits import (
     get_rate_limiter_settings,
     update_rate_limiter_settings,
-    RateLimiterSettings,
-    PlatformSettings,
 )
 from media_agent.models.database import (
     get_db,
@@ -22,16 +20,9 @@ from media_agent.models.database import (
     delete_product,
     create_post,
     get_posts,
-    delete_post,
     create_faq,
     get_faqs,
-    delete_faq,
     get_leads,
-    update_lead,
-    log_activity,
-    get_recent_activities,
-    get_analytics_summary,
-    get_analytics_by_platform,
     save_platform_credential,
     get_connected_platforms,
 )
@@ -104,7 +95,7 @@ def render_sidebar():
             ui.button("Toggle", on_click=toggle_automation).props("flat").classes("mt-2 w-full text-gray-400 hover:text-white")
 
     # Main content with left margin
-    with ui.element("div").classes("ml-[260px]").style(f"min-height: 100vh;"):
+    with ui.element("div").classes("ml-[260px]").style("min-height: 100vh;"):
         yield
 
 
@@ -364,7 +355,7 @@ def execute_chat_action(action_type: str):
         ui.run_javascript(f'window.location.href = "{path}"')
     elif action_type.startswith("connect:"):
         platform = action_type.replace("connect:", "")
-        ui.run_javascript(f'window.location.href = "/settings"')
+        ui.run_javascript('window.location.href = "/settings"')
     elif action_type.startswith("create_post:"):
         product_id = action_type.replace("create_post:", "")
         ui.run_javascript(f'window.location.href = "/product/{product_id}"')
@@ -491,7 +482,7 @@ async def render_templates():
     render_sidebar()
     render_chat_widget()
     
-    from media_agent.models.database import get_templates, create_template, delete_template
+    from media_agent.models.database import get_templates
     
     with ui.row().classes("w-full items-center mb-6"):
         ui.button(icon="arrow_back", on_click=lambda: navigate("home")).props("flat round")
@@ -561,7 +552,7 @@ async def render_campaigns():
     render_sidebar()
     render_chat_widget()
     
-    from media_agent.models.database import get_campaigns, create_campaign, delete_campaign
+    from media_agent.models.database import get_campaigns
     
     with ui.row().classes("w-full items-center mb-6"):
         ui.button(icon="arrow_back", on_click=lambda: navigate("home")).props("flat round")
@@ -628,7 +619,7 @@ async def render_engagement():
     render_sidebar()
     render_chat_widget()
     
-    from media_agent.models.database import get_engagement_queue, update_engagement_item
+    from media_agent.models.database import get_engagement_queue
     
     with ui.row().classes("w-full items-center mb-6"):
         ui.button(icon="arrow_back", on_click=lambda: navigate("home")).props("flat round")
@@ -1280,7 +1271,7 @@ async def render_settings():
         status_color = "green" if scheduler.is_running else "red"
         
         with ui.row().classes("w-full justify-between items-center"):
-            ui.label(f"Post Scheduler:").classes("font-bold")
+            ui.label("Post Scheduler:").classes("font-bold")
             with ui.row().classes("gap-2"):
                 ui.badge(status, color=status_color)
                 ui.button("Toggle", on_click=lambda: toggle_scheduler()).props("flat color=orange")
@@ -1839,7 +1830,6 @@ async def show_create_post_dialog(product_id):
                 ui.notify("Content required", type="warning")
                 return
             
-            from datetime import datetime
             db = get_db()
             async with db.async_session_maker() as session:
                 await create_post(session, product_id=product_id, content=content.value, platform=platform.value, scheduled_at=None, status="draft")

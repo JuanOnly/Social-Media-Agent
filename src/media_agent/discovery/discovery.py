@@ -1,7 +1,5 @@
 """Lead discovery service."""
 
-import asyncio
-import re
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession

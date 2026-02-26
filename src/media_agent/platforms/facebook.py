@@ -1,6 +1,5 @@
 """Facebook platform adapter using Playwright with human behavior."""
 
-import asyncio
 from typing import Optional
 
 from .base import PlatformAdapter

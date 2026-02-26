@@ -320,8 +320,6 @@ async def get_analytics_summary(
     days: int = 30,
 ) -> dict:
     """Get analytics summary for the specified period."""
-    from datetime import timedelta
-    from sqlalchemy import func, Integer
     
     # Get posts stats
     posts_query = select(
@@ -373,7 +371,6 @@ async def get_analytics_by_platform(
     product_id: Optional[int] = None,
 ) -> dict:
     """Get analytics grouped by platform."""
-    from sqlalchemy import func
     
     # Posts by platform
     posts_query = select(

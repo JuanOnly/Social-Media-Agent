@@ -1,6 +1,5 @@
 """Post scheduler service for automated publishing."""
 
-import asyncio
 import logging
 from datetime import datetime
 from typing import Optional
